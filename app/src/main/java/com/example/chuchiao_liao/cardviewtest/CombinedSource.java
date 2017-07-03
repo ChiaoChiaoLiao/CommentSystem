@@ -32,9 +32,9 @@ public class CombinedSource {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    public static final Firebase sFirebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
-    private static SimpleDateFormat sDataFormat = new SimpleDateFormat("yyyyMMddhhmmssSSS");
-    private static final String sTAG = "CombinedDataSource";
+    public static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
+    private static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyyMMddhhmmssSSS");
+    private static final String TAG = "CombinedDataSource";
     private static final String COLUMN_TEXT = "text";
     private static final String COLUMN_NAME = "name";
 
@@ -65,14 +65,14 @@ public class CombinedSource {
     // ------------------------------------------------------------------------
     public static void saveMessage (Message message, String convId, int count){
         long date = message.getDate().getTime();
-        String key = sDataFormat.format(date);
+        String key = DATA_FORMAT.format(date);
         HashMap<String, String> msg = new HashMap<>();
         msg.put(COLUMN_NAME, message.getName());
         msg.put(COLUMN_TEXT, message.getMessage());
-        sFirebaseRef.child(convId).child("MsgBox").child(key).setValue(msg);
+        FIREBASE_REF.child(convId).child("MsgBox").child(key).setValue(msg);
         HashMap<String, Object> msg2 = new HashMap<>();
         msg2.put("MsgCount", count);
-        sFirebaseRef.child(convId).updateChildren(msg2);
+        FIREBASE_REF.child(convId).updateChildren(msg2);
         mLast = key;
         mRequest = false;
     }
@@ -81,17 +81,17 @@ public class CombinedSource {
         CombinedSource.CombinedListener listener = new CombinedSource.CombinedListener(callbacks);
         if (lastId == null) {
             mRequest = false;
-            sFirebaseRef.child(convId).child("MsgBox").orderByKey().limitToLast(numReq).addChildEventListener(listener);
+            FIREBASE_REF.child(convId).child("MsgBox").orderByKey().limitToLast(numReq).addChildEventListener(listener);
         } else {
             mRequest = true;
-            sFirebaseRef.child(convId).child("MsgBox").orderByKey().endAt(lastId).limitToLast(numReq).addChildEventListener(listener);
+            FIREBASE_REF.child(convId).child("MsgBox").orderByKey().endAt(lastId).limitToLast(numReq).addChildEventListener(listener);
         }
 
         return listener;
     }
 
     public static void stop (CombinedSource.CombinedListener listener){
-        sFirebaseRef.removeEventListener(listener);
+        FIREBASE_REF.removeEventListener(listener);
     }
 
     public interface CombinedCallbacks {
@@ -163,7 +163,7 @@ public class CombinedSource {
                         for (int i = bound; i < size; i++) {
                             JSONObject replyObject = sortedArray.getJSONObject(i);
                             Reply reply = new Reply();
-                            reply.setDate(sDataFormat.parse(replyObject.getString("key")));
+                            reply.setDate(DATA_FORMAT.parse(replyObject.getString("key")));
                             reply.setMessage(replyObject.getJSONObject("obj").getString(COLUMN_TEXT));
                             reply.setName(replyObject.getJSONObject("obj").getString(COLUMN_NAME));
                             replies.add(reply);
@@ -185,9 +185,9 @@ public class CombinedSource {
 
                 try {
                     key = dataSnapshot.getKey();
-                    message.setDate(sDataFormat.parse(key));
+                    message.setDate(DATA_FORMAT.parse(key));
                 } catch (Exception e) {
-                    Log.e(sTAG, e.toString());
+                    Log.e(TAG, e.toString());
                 }
                 if (callbacks != null) {
                     //ReplyShortcut.ReplysShortcutListener mChildListener = ReplyShortcut.addReplysShortcutListener(mConvId, key, this);

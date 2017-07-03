@@ -1,9 +1,8 @@
 package com.example.chuchiao_liao.cardviewtest;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +26,7 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         /*MessageSource.MessagesCallbacks*/ CombinedSource.CombinedCallbacks {
-    private Firebase myFirebaseRef;
+    private Firebase mMyFirebaseRef;
     public static final String USER_EXTRA = "USER";
     public static final String TAG = "ChatActivity";
     private ArrayList<Message> mMessages;
@@ -43,12 +42,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ChildMessagesAdapter mChildAdapter;
     private ReplyShortcut.ReplysShortcutListener mChildListener;
     public static int mMsgCount;
-    private int howMany;
-    private Firebase firebaseRef;
+    private int mHowMany;
+    private Firebase mFirebaseRef;
     private String mLastId;
-    private int index;
-    private final int numReq = 10;
-    private int deleteIndex;
+    private int mIndex;
+    private final int mNumReq = 10;
+    private int mDeleteIndex;
     private boolean mIsReq;
 
     @Override
@@ -56,10 +55,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Firebase.setAndroidContext(this);
-        firebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
+        mFirebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
 
         mConvId = "CommentSystem";
-        howMany = numReq + 1;
+        mHowMany = mNumReq + 1;
 
         mListView = (ListView) findViewById(R.id.messageList);
         mMessageView = (EditText) findViewById(R.id.messageWrite);
@@ -70,13 +69,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button sendMessage = (Button) findViewById(R.id.messageSend);
         sendMessage.setOnClickListener(this);
 
-        firebaseRef.child(mConvId).child("MsgCount")
+        mFirebaseRef.child(mConvId).child("MsgCount")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mMsgCount = Integer.valueOf(dataSnapshot.getValue().toString());
                 mListener = CombinedSource.addCombinedListener(mConvId,
-                        MainActivity.this, howMany, null);
+                        MainActivity.this, mHowMany, null);
             }
 
             @Override
@@ -118,14 +117,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onCombinedReq(Message message) {
         if (mIsReq) {
-            if (index > 0) {
-                mMessages.add(index, message);
+            if (mIndex > 0) {
+                mMessages.add(mIndex, message);
             } else {
                 mMessages.set(0, message);
             }
-            index = index + 1;
+            mIndex = mIndex + 1;
 
-            if (index > numReq) {
+            if (mIndex > mNumReq) {
                 mIsReq = false;
             }
         } else {
@@ -137,15 +136,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onCombinedRemoved() {
-        mMessages.remove(deleteIndex);
+        mMessages.remove(mDeleteIndex);
         mAdapter.notifyDataSetChanged();
     }
 
     public void requestMore(String lastId) {
-        index = 0;
+        mIndex = 0;
         mIsReq = true;
         mListener = CombinedSource.addCombinedListener(
-                mConvId, MainActivity.this, numReq + 1, lastId);
+                mConvId, MainActivity.this, mNumReq + 1, lastId);
     }
 
     private class MessagesAdapter extends BaseAdapter/* implements ReplyShortcut.ReplysShortcutCallbacks*/{
@@ -187,15 +186,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String key = "";
             View nullView = mInflater.inflate(R.layout.more_item, null);
             if (mMsgCount > 0) {
-                if (mMsgCount > howMany) {
+                if (mMsgCount > mHowMany) {
                     if (position == 0) {
                         convertView = nullView;
                         convertView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                howMany = howMany + numReq;
-                                if (howMany > mMsgCount) {
-                                    howMany = mMsgCount;
+                                mHowMany = mHowMany + mNumReq;
+                                if (mHowMany > mMsgCount) {
+                                    mHowMany = mMsgCount;
                                 }
                                 long time = items.get(0).getDate().getTime();
                                 String lastId = new SimpleDateFormat("yyyyMMddhhmmssSSS").format(time);
@@ -239,13 +238,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         convertView.setOnLongClickListener(new View.OnLongClickListener() {
                             @Override
                             public boolean onLongClick(View v) {
-                                firebaseRef.child(mConvId).child("MsgBox")
+                                mFirebaseRef.child(mConvId).child("MsgBox")
                                         .child(finalKey).removeValue();
                                 mMsgCount = mMsgCount - 1;
                                 HashMap<String, Object> msg2 = new HashMap<>();
                                 msg2.put("MsgCount", mMsgCount);
-                                firebaseRef.child(mConvId).updateChildren(msg2);
-                                deleteIndex = position;
+                                mFirebaseRef.child(mConvId).updateChildren(msg2);
+                                mDeleteIndex = position;
                                 return true;
                             }
                         });
@@ -292,12 +291,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     convertView.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View v) {
-                            firebaseRef.child(mConvId).child("MsgBox").child(finalKey).removeValue();
+                            mFirebaseRef.child(mConvId).child("MsgBox").child(finalKey).removeValue();
                             mMsgCount = mMsgCount - 1;
                             HashMap<String, Object> msg2 = new HashMap<>();
                             msg2.put("MsgCount", mMsgCount);
-                            firebaseRef.child(mConvId).updateChildren(msg2);
-                            deleteIndex = position;
+                            mFirebaseRef.child(mConvId).updateChildren(msg2);
+                            mDeleteIndex = position;
                             return true;
                         }
                     });

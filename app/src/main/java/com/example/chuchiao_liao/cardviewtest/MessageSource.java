@@ -6,7 +6,6 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 
 import java.text.SimpleDateFormat;
@@ -24,9 +23,9 @@ public class MessageSource {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    public static final Firebase sFirebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
-    private static SimpleDateFormat sDataFormat = new SimpleDateFormat("yyyyMMddmmss");
-    private static final String sTAG = "MessageDataSource";
+    public static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
+    private static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyyMMddmmss");
+    private static final String TAG = "MessageDataSource";
     private static final String COLUMN_TEXT = "text";
     private static final String COLUMN_NAME = "name";
 
@@ -55,16 +54,16 @@ public class MessageSource {
     // ------------------------------------------------------------------------
     public static void saveMessage (Message message, String convId){
         Date date = message.getDate();
-        String key = sDataFormat.format(date);
+        String key = DATA_FORMAT.format(date);
         HashMap<String, String> msg = new HashMap<>();
         msg.put(COLUMN_NAME, message.getName());
         msg.put(COLUMN_TEXT, message.getMessage());
-        sFirebaseRef.child(convId).child(key).setValue(msg);
+        FIREBASE_REF.child(convId).child(key).setValue(msg);
     }
 
     public static Long getChildCount(String convId, String key) {
         final long[] count = new long[1];
-        sFirebaseRef.child(convId).child(key).child("SubReply").addValueEventListener(new ValueEventListener() {
+        FIREBASE_REF.child(convId).child(key).child("SubReply").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 count[0] = dataSnapshot.getChildrenCount();
@@ -81,8 +80,8 @@ public class MessageSource {
     public static MessagesListener addMessagesListener (String convId, final MessagesCallbacks callbacks){
         MessagesListener listener = new MessagesListener(callbacks);
         //sFirebaseRef.child(convId).limitToLast(5).addChildEventListener(listener);
-        sFirebaseRef.child(convId).addChildEventListener(listener);
-        sFirebaseRef.child(convId).addValueEventListener(new ValueEventListener() {
+        FIREBASE_REF.child(convId).addChildEventListener(listener);
+        FIREBASE_REF.child(convId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -97,7 +96,7 @@ public class MessageSource {
     }
 
     public static void stop (MessagesListener listener){
-        sFirebaseRef.removeEventListener(listener);
+        FIREBASE_REF.removeEventListener(listener);
     }
 
     public interface MessagesCallbacks {
@@ -122,9 +121,9 @@ public class MessageSource {
             }
 
             try {
-                message.setDate(sDataFormat.parse(dataSnapshot.getKey()));
+                message.setDate(DATA_FORMAT.parse(dataSnapshot.getKey()));
             } catch (Exception e) {
-                Log.e(sTAG, e.toString());
+                Log.e(TAG, e.toString());
             }
             if (callbacks != null) {
                 callbacks.onMessageAdded(message);

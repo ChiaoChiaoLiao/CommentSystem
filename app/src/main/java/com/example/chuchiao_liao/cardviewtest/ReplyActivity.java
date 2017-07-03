@@ -2,12 +2,10 @@ package com.example.chuchiao_liao.cardviewtest;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,7 +17,6 @@ import com.firebase.client.Firebase;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -27,7 +24,7 @@ import java.util.HashMap;
  * Created by Chuchiao_Liao on 2016/10/27.
  */
 public class ReplyActivity extends AppCompatActivity implements View.OnClickListener, ReplySource.ReplysCallbacks  {
-    private Firebase myFirebaseRef;
+    private Firebase mMyFirebaseRef;
     public static final String USER_EXTRA = "USER";
     public static final String TAG = "ChatActivity";
     private ArrayList<Message> mReplys;
@@ -40,8 +37,8 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
     private EditText mReplyView;
     private String mKey;
     private int mCount;
-    private int deleteIndex;
-    private static final Firebase sFirebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
+    private int mDeleteIndex;
+    private static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +89,7 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onReplyRemoved() {
-        mReplys.remove(deleteIndex);
+        mReplys.remove(mDeleteIndex);
         mAdapter.notifyDataSetChanged();
     }
 
@@ -153,12 +150,12 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
             convertView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    sFirebaseRef.child(mConvId).child("MsgBox").child(mKey).child("SubReply").child(key).removeValue();
+                    FIREBASE_REF.child(mConvId).child("MsgBox").child(mKey).child("SubReply").child(key).removeValue();
                     mCount = mCount - 1;
                     HashMap<String, Object> msg2 = new HashMap<>();
                     msg2.put("ReplyCount", mCount);
-                    sFirebaseRef.child(mConvId).child("MsgBox").child(mKey).updateChildren(msg2);
-                    deleteIndex = position;
+                    FIREBASE_REF.child(mConvId).child("MsgBox").child(mKey).updateChildren(msg2);
+                    mDeleteIndex = position;
                     return true;
                 }
             });

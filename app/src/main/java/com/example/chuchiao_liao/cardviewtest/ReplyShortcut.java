@@ -6,11 +6,8 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -24,9 +21,9 @@ public class ReplyShortcut {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    private static final Firebase sFirebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
-    private static SimpleDateFormat sDataFormat = new SimpleDateFormat("yyyyMMddmmss");
-    private static final String sTAG = "ReplyShortcutDataSource";
+    private static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
+    private static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyyMMddmmss");
+    private static final String TAG = "ReplyShortcutDataSource";
     private static final String COLUMN_TEXT = "text";
     private static final String COLUMN_NAME = "name";
 
@@ -55,13 +52,13 @@ public class ReplyShortcut {
     // ------------------------------------------------------------------------
     public static ReplyShortcut.ReplysShortcutListener addReplysShortcutListener(String convId, String key, final ReplyShortcut.ReplysShortcutCallbacks callbacks){
         ReplyShortcut.ReplysShortcutListener listener = new ReplyShortcut.ReplysShortcutListener(callbacks);
-        sFirebaseRef.child(convId).child(key).child("SubReply").limitToLast(6).addChildEventListener(listener);
+        FIREBASE_REF.child(convId).child(key).child("SubReply").limitToLast(6).addChildEventListener(listener);
 
         return listener;
     }
 
     public static void stop (ReplysShortcutListener listener){
-        sFirebaseRef.removeEventListener(listener);
+        FIREBASE_REF.removeEventListener(listener);
     }
 
     public interface ReplysShortcutCallbacks {
@@ -80,9 +77,9 @@ public class ReplyShortcut {
             reply.setName(msg.get(COLUMN_NAME));
             reply.setMessage(msg.get(COLUMN_TEXT));
             try {
-                reply.setDate(sDataFormat.parse(dataSnapshot.getKey()));
+                reply.setDate(DATA_FORMAT.parse(dataSnapshot.getKey()));
             } catch (Exception e) {
-                Log.e(sTAG, e.toString());
+                Log.e(TAG, e.toString());
             }
             if (callbacks != null) {
                 callbacks.onReplyShortcutAdded(reply);
