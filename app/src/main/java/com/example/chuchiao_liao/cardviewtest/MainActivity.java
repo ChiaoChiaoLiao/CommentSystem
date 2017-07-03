@@ -27,17 +27,15 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         /*MessageSource.MessagesCallbacks*/ CombinedSource.CombinedCallbacks {
-//    private Firebase myFirebaseRef;
-//    public static final String USER_EXTRA = "USER";
-//    public static final String TAG = "ChatActivity";
+    private Firebase myFirebaseRef;
+    public static final String USER_EXTRA = "USER";
+    public static final String TAG = "ChatActivity";
     private ArrayList<Message> mMessages;
-    //private ArrayList<Message> mChildMessages;
     private ArrayList<Reply> mChildMessages;
     private MessagesAdapter mAdapter;
     private ListView mListView;
     private Date mLastMessageDate = new Date();
     private String mConvId;
-    //private MessageSource.MessagesListener mListener;
     private CombinedSource.CombinedListener mListener;
     private EditText mMessageView;
     public static final String CON = "conv";
@@ -72,11 +70,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button sendMessage = (Button) findViewById(R.id.messageSend);
         sendMessage.setOnClickListener(this);
 
-        firebaseRef.child(mConvId).child("MsgCount").addListenerForSingleValueEvent(new ValueEventListener() {
+        firebaseRef.child(mConvId).child("MsgCount")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mMsgCount = Integer.valueOf(dataSnapshot.getValue().toString());
-                mListener = CombinedSource.addCombinedListener(mConvId, MainActivity.this, howMany, null);
+                mListener = CombinedSource.addCombinedListener(mConvId,
+                        MainActivity.this, howMany, null);
             }
 
             @Override
@@ -84,66 +84,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-
-        //mListener = MessageSource.addMessagesListener(mConvId, this);
-//        mListener = CombinedSource.addCombinedListener(mConvId, this, howMany);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-        Log.d("onCreate", "onCreate");
-
-        //mListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
-//        if (mMessageView.isFocused()){
-//            mListView.setVerticalScrollbarPosition(mListView.getCount()-1);
-//        }
-
-//        setTitle(mReciptent);
-//        if (getSupportActionBar() != null){
-//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        }
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        /*mListView = (ListView) findViewById(R.id.messageList);
-        mMessageView = (EditText) findViewById(R.id.messageWrite);
-        mMessages = new ArrayList<>();
-        mAdapter = new MessagesAdapter(this, mMessages);
-        mListView.setAdapter(mAdapter);
-        mListView.setDividerHeight(0);
-        Button sendMessage = (Button) findViewById(R.id.messageSend);
-        sendMessage.setOnClickListener(this);
-
-        firebaseRef.child(mConvId).child("MsgCount").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mMsgCount = Integer.valueOf(dataSnapshot.getValue().toString());
-                mListener = CombinedSource.addCombinedListener(mConvId, MainActivity.this, howMany, null);
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-
-        //mListener = MessageSource.addMessagesListener(mConvId, this);
-//        mListener = CombinedSource.addCombinedListener(mConvId, this, howMany);
-
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);*/
-
-        Log.d("onResume", "onResume");
     }
 
     @Override
     public void onClick(View v) {
         EditText messageSender = (EditText) findViewById(R.id.messageSender);
-//        if (mMessageView.isFocused()){
-//            Log.d("focus", "yes");
-//            mListView.setVerticalScrollbarPosition(mListView.getAdapter().getCount()-1);
-//        }
         String newMessage = mMessageView.getText().toString();
         String sender = messageSender.getText().toString();
         mMessageView.setText("");
@@ -156,16 +103,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CombinedSource.saveMessage(msg, mConvId, mMsgCount);
     }
 
-    /*@Override
-    public void onMessageAdded(Message message){
-        mMessages.add(message);
-        mAdapter.notifyDataSetChanged();
-    }*/
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //MessageSource.stop(mListener);
         CombinedSource.stop(mListener);
     }
 
@@ -204,16 +144,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void requestMore(String lastId) {
         index = 0;
         mIsReq = true;
-        mListener = CombinedSource.addCombinedListener(mConvId, MainActivity.this, numReq + 1, lastId);
+        mListener = CombinedSource.addCombinedListener(
+                mConvId, MainActivity.this, numReq + 1, lastId);
     }
 
     private class MessagesAdapter extends BaseAdapter/* implements ReplyShortcut.ReplysShortcutCallbacks*/{
-        /*@Override
-        public void onReplyShortcutAdded(Message message) {
-            Log.d("Reply", message.getName());
-            mChildMessages.add(message);
-            mChildAdapter.notifyDataSetChanged();
-        }*/
 
         private class ViewHolder{
             ImageView icon;
@@ -248,54 +183,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-            /*final ViewHolder holder;
-            String key = "";
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.item, parent, false);
-                holder = new ViewHolder();
-                holder.sender = (TextView) convertView.findViewById(R.id.userName);
-                holder.icon = (ImageView) convertView.findViewById(R.id.userImage);
-                holder.message = (TextView) convertView.findViewById(R.id.userMessage);
-                holder.childList = (ChildListView) convertView.findViewById(R.id.childList);
-                holder.date = (TextView) convertView.findViewById(R.id.messageTime);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-                holder.childList.setEnabled(false);
-            }
-            holder.icon.setImageResource(R.drawable.ic_sentiment_satisfied_black_24px);
-            holder.sender.setText(items.get(position).getName());
-            holder.message.setText(items.get(position).getMessage());
-            if (items.get(position).getDate() != null) {
-                holder.key = items.get(position).getDate().getTime();
-                key = new SimpleDateFormat("yyyyMMddhhmmssSSS").format(holder.key);
-                holder.date.setText(new SimpleDateFormat("yyyy/MM/dd hh:mm").format(items.get(position).getDate().getTime()));
-            }
-            holder.count = items.get(position).getCount();
-
-            final String finalKey = key;
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, ReplyActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString(CHI, finalKey);
-                    bundle.putString(CON, mConvId);
-                    bundle.putInt("Count", holder.count);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                }
-            });
-            mChildMessages = items.get(position).getChildReply();
-            mChildAdapter = new ChildMessagesAdapter(MainActivity.this, mChildMessages, key, holder.count);
-            holder.childList.setAdapter(mChildAdapter);
-            holder.childList.setDividerHeight(0);
-
-            /*mChildMessages = new ArrayList<>();
-            mChildAdapter = new ChildMessagesAdapter(MainActivity.this, mChildMessages, key, holder.count);
-            holder.childList.setAdapter(mChildAdapter);
-            holder.childList.setDividerHeight(0);
-            mChildListener = ReplyShortcut.addReplysShortcutListener(mConvId, key, this);*/
             final ViewHolder holder;
             String key = "";
             View nullView = mInflater.inflate(R.layout.more_item, null);
@@ -325,12 +212,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         holder.date = (TextView) convertView.findViewById(R.id.messageTime);
                         convertView.setTag(holder);
                         holder.icon.setImageResource(R.drawable.ic_sentiment_satisfied_black_24px);
-                        holder.sender.setText(String.valueOf(position) + ". " + items.get(position).getName());
+                        holder.sender.setText(String.valueOf(position) + ". "
+                                + items.get(position).getName());
                         holder.message.setText(items.get(position).getMessage());
                         if (items.get(position).getDate() != null) {
                             holder.key = items.get(position).getDate().getTime();
                             key = new SimpleDateFormat("yyyyMMddhhmmssSSS").format(holder.key);
-                            holder.date.setText(new SimpleDateFormat("yyyy/MM/dd hh:mm").format(items.get(position).getDate().getTime()));
+                            holder.date.setText(new SimpleDateFormat("yyyy/MM/dd hh:mm")
+                                    .format(items.get(position).getDate().getTime()));
                         }
                         holder.count = items.get(position).getCount();
 
@@ -347,10 +236,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 startActivity(intent);
                             }
                         });
-                        /*convertView.setOnLongClickListener(new View.OnLongClickListener() {
+                        convertView.setOnLongClickListener(new View.OnLongClickListener() {
                             @Override
                             public boolean onLongClick(View v) {
-                                firebaseRef.child(mConvId).child("MsgBox").child(finalKey).removeValue();
+                                firebaseRef.child(mConvId).child("MsgBox")
+                                        .child(finalKey).removeValue();
                                 mMsgCount = mMsgCount - 1;
                                 HashMap<String, Object> msg2 = new HashMap<>();
                                 msg2.put("MsgCount", mMsgCount);
@@ -358,32 +248,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 deleteIndex = position;
                                 return true;
                             }
-                        });*/
+                        });
                         mChildMessages = items.get(position).getChildReply();
-                        mChildAdapter = new ChildMessagesAdapter(MainActivity.this, mChildMessages, key, holder.count);
+                        mChildAdapter = new ChildMessagesAdapter(MainActivity.this,
+                                mChildMessages, key, holder.count);
                         holder.childList.setAdapter(mChildAdapter);
                         holder.childList.setDividerHeight(0);
                     }
                 } else {
-//                    if (convertView == null) {
-                        convertView = mInflater.inflate(R.layout.item, parent, false);
-                        holder = new ViewHolder();
-                        holder.sender = (TextView) convertView.findViewById(R.id.userName);
-                        holder.icon = (ImageView) convertView.findViewById(R.id.userImage);
-                        holder.message = (TextView) convertView.findViewById(R.id.userMessage);
-                        holder.childList = (ChildListView) convertView.findViewById(R.id.childList);
-                        holder.date = (TextView) convertView.findViewById(R.id.messageTime);
-                        convertView.setTag(holder);
-//                    } else {
-//                        holder = (ViewHolder) convertView.getTag();
-//                    }
+                    convertView = mInflater.inflate(R.layout.item, parent, false);
+                    holder = new ViewHolder();
+                    holder.sender = (TextView) convertView.findViewById(R.id.userName);
+                    holder.icon = (ImageView) convertView.findViewById(R.id.userImage);
+                    holder.message = (TextView) convertView.findViewById(R.id.userMessage);
+                    holder.childList = (ChildListView) convertView.findViewById(R.id.childList);
+                    holder.date = (TextView) convertView.findViewById(R.id.messageTime);
+                    convertView.setTag(holder);
                     holder.icon.setImageResource(R.drawable.ic_sentiment_satisfied_black_24px);
-                    holder.sender.setText(String.valueOf(position) + ". " + items.get(position).getName());
+                    holder.sender.setText(String.valueOf(position) + ". "
+                            + items.get(position).getName());
                     holder.message.setText(items.get(position).getMessage());
                     if (items.get(position).getDate() != null) {
                         holder.key = items.get(position).getDate().getTime();
                         key = new SimpleDateFormat("yyyyMMddhhmmssSSS").format(holder.key);
-                        holder.date.setText(new SimpleDateFormat("yyyy/MM/dd hh:mm").format(items.get(position).getDate().getTime()));
+                        holder.date.setText(new SimpleDateFormat("yyyy/MM/dd hh:mm").format(
+                                items.get(position).getDate().getTime()));
                     }
                     holder.count = items.get(position).getCount();
 
@@ -400,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             startActivity(intent);
                         }
                     });
-                    /*convertView.setOnLongClickListener(new View.OnLongClickListener() {
+                    convertView.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View v) {
                             firebaseRef.child(mConvId).child("MsgBox").child(finalKey).removeValue();
@@ -411,9 +300,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             deleteIndex = position;
                             return true;
                         }
-                    });*/
+                    });
                     mChildMessages = items.get(position).getChildReply();
-                    mChildAdapter = new ChildMessagesAdapter(MainActivity.this, mChildMessages, key, holder.count);
+                    mChildAdapter = new ChildMessagesAdapter(MainActivity.this, mChildMessages, key,
+                            holder.count);
                     holder.childList.setAdapter(mChildAdapter);
                     holder.childList.setDividerHeight(0);
                 }

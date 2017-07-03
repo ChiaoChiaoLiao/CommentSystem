@@ -27,9 +27,9 @@ import java.util.HashMap;
  * Created by Chuchiao_Liao on 2016/10/27.
  */
 public class ReplyActivity extends AppCompatActivity implements View.OnClickListener, ReplySource.ReplysCallbacks  {
-    //    private Firebase myFirebaseRef;
-//    public static final String USER_EXTRA = "USER";
-//    public static final String TAG = "ChatActivity";
+    private Firebase myFirebaseRef;
+    public static final String USER_EXTRA = "USER";
+    public static final String TAG = "ChatActivity";
     private ArrayList<Message> mReplys;
     private ReplyActivity.ReplysAdapter mAdapter;
     private String mReciptent;
@@ -60,32 +60,17 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
         mAdapter = new ReplyActivity.ReplysAdapter(this, mReplys);
         mListView.setAdapter(mAdapter);
         mListView.setDividerHeight(0);
-        //mListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
-//        if (mReplyView.isFocused()){
-//            mListView.setVerticalScrollbarPosition(mListView.getCount()-1);
-//        }
-
-//        setTitle(mReciptent);
-//        if (getSupportActionBar() != null){
-//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        }
         Button sendReply = (Button) findViewById(R.id.messageSend);
         sendReply.setOnClickListener(this);
 
         mListener = ReplySource.addReplysListener(mConvId, mKey, this);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-
     }
 
     @Override
     public void onClick(View v) {
         EditText replySender = (EditText) findViewById(R.id.messageSender);
-//        if (mMessageView.isFocused()){
-//            Log.d("focus", "yes");
-//            mListView.setVerticalScrollbarPosition(mListView.getAdapter().getCount()-1);
-//        }
         String newReply = mReplyView.getText().toString();
         String sender = replySender.getText().toString();
         mReplyView.setText("");
@@ -149,7 +134,6 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
             ReplyActivity.ReplysAdapter.ViewHolder holder;
-            //View nullView = mInflater.inflate(R.layout.null_item, null);
             if (convertView == null) {
                 convertView = mInflater.inflate(R.layout.item, parent, false);
                 holder = new ReplyActivity.ReplysAdapter.ViewHolder();
@@ -166,7 +150,7 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
             holder.sender.setText(items.get(position).getName());
             holder.reply.setText(items.get(position).getMessage());
             final String key = new SimpleDateFormat("yyyyMMddhhmmssSSS").format(items.get(position).getDate().getTime());
-           /* convertView.setOnLongClickListener(new View.OnLongClickListener() {
+            convertView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
                     sFirebaseRef.child(mConvId).child("MsgBox").child(mKey).child("SubReply").child(key).removeValue();
@@ -177,31 +161,7 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
                     deleteIndex = position;
                     return true;
                 }
-            });*/
-//            if (items.size() > 5) {
-//                if (position == 1) {
-//                    convertView = nullView;
-//                    TextView textView = (TextView) convertView.findViewById(R.id.nullText);
-//                    textView.setText("View " + String.valueOf(items.size()-5) + " more reply");
-//                } else if (position > items.size()-5) {
-//                    //if (convertView == null) {
-//                    convertView = mInflater.inflate(R.layout.item, parent, false);
-//                    holder = new ViewHolder();
-//                    holder.sender = (TextView) convertView.findViewById(R.id.userName);
-//                    holder.icon = (ImageView) convertView.findViewById(R.id.icon);
-//                    holder.message = (TextView) convertView.findViewById(R.id.userMessage);
-//                    convertView.setTag(holder);
-//                    //} else {
-//                        holder = (ViewHolder) convertView.getTag();
-//                    //}
-//                    holder.sender.setText(items.get(position).getName());
-//                    holder.message.setText(items.get(position).getMessage());
-//                } else {
-//                    convertView = nullView;
-//                    TextView textView = (TextView) convertView.findViewById(R.id.nullText);
-//                    textView.setHeight(0);
-//                }
-//            }
+            });
             return convertView;
         }
     }

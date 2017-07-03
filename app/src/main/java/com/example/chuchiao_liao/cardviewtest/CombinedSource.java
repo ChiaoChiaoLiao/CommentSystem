@@ -79,8 +79,6 @@ public class CombinedSource {
 
     public static CombinedSource.CombinedListener addCombinedListener(String convId, final CombinedCallbacks callbacks, int numReq, String lastId){
         CombinedSource.CombinedListener listener = new CombinedSource.CombinedListener(callbacks);
-        //sFirebaseRef.child(convId).limitToLast(5).addChildEventListener(listener);
-        //sFirebaseRef.child(convId).child("MsgBox").addChildEventListener(listener);
         if (lastId == null) {
             mRequest = false;
             sFirebaseRef.child(convId).child("MsgBox").orderByKey().limitToLast(numReq).addChildEventListener(listener);
@@ -222,12 +220,5 @@ public class CombinedSource {
         public void onCancelled(FirebaseError firebaseError) {
 
         }
-
-        /*@Override
-        public void onReplyShortcutAdded(Reply reply) {
-            mReply.add(reply);
-            mMessage.setChildReply(mReply);
-            callbacks.onCombinedAdded(mMessage);
-        }*/
     }
 }

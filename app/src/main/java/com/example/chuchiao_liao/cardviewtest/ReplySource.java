@@ -24,7 +24,8 @@ public class ReplySource {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    private static final Firebase sFirebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
+    private static final Firebase sFirebaseRef
+            = new Firebase("https://hostingtest-20944.firebaseio.com/");
     private static SimpleDateFormat sDataFormat = new SimpleDateFormat("yyyyMMddhhmmssSSS");
     private static final String sTAG = "ReplyDataSource";
     private static final String COLUMN_TEXT = "text";
@@ -59,18 +60,21 @@ public class ReplySource {
         HashMap<String, String> msg = new HashMap<>();
         msg.put(COLUMN_NAME, message.getName());
         msg.put(COLUMN_TEXT, message.getMessage());
-        sFirebaseRef.child(convId).child("MsgBox").child(key1).child("SubReply").child(key).setValue(msg);
+        sFirebaseRef.child(convId).child("MsgBox").child(key1).child("SubReply")
+                .child(key).setValue(msg);
         HashMap<String, Object> msg2 = new HashMap<>();
         msg2.put("ReplyCount", count);
         sFirebaseRef.child(convId).child("MsgBox").child(key1).updateChildren(msg2);
     }
 
-    public static ReplySource.ReplysListener addReplysListener(String convId, String key, final ReplysCallbacks callbacks){
+    public static ReplySource.ReplysListener addReplysListener(String convId, String key,
+                                                               final ReplysCallbacks callbacks){
         ReplySource.ReplysListener listener = new ReplySource.ReplysListener(callbacks);
-        //sFirebaseRef.child(convId).limitToLast(5).addChildEventListener(listener);
 
-        sFirebaseRef.child(convId).child("MsgBox").child(key).child("SubReply").addChildEventListener(listener);
-        sFirebaseRef.child(convId).child("MsgBox").child(key).child("SubReply").addValueEventListener(new ValueEventListener() {
+        sFirebaseRef.child(convId).child("MsgBox").child(key).child("SubReply")
+                .addChildEventListener(listener);
+        sFirebaseRef.child(convId).child("MsgBox").child(key).child("SubReply")
+                .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
