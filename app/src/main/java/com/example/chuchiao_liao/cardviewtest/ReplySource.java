@@ -2,14 +2,15 @@ package com.example.chuchiao_liao.cardviewtest;
 
 import android.util.Log;
 
-import com.firebase.client.ChildEventListener;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+
+import static com.example.chuchiao_liao.cardviewtest.MainActivity.sDatabaseReference;
 
 /**
  * Created by Chuchiao_Liao on 2016/10/27.
@@ -22,8 +23,6 @@ public class ReplySource {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    private static final Firebase FIREBASE_REF
-            = new Firebase("https://hostingtest-20944.firebaseio.com/");
     private static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyyMMddhhmmssSSS");
     private static final String TAG = "ReplyDataSource";
     private static final String COLUMN_TEXT = "text";
@@ -58,36 +57,36 @@ public class ReplySource {
         HashMap<String, String> msg = new HashMap<>();
         msg.put(COLUMN_NAME, message.getName());
         msg.put(COLUMN_TEXT, message.getMessage());
-        FIREBASE_REF.child(convId).child("MsgBox").child(key1).child("SubReply")
+        sDatabaseReference.child(convId).child("MsgBox").child(key1).child("SubReply")
                 .child(key).setValue(msg);
         HashMap<String, Object> msg2 = new HashMap<>();
         msg2.put("ReplyCount", count);
-        FIREBASE_REF.child(convId).child("MsgBox").child(key1).updateChildren(msg2);
+        sDatabaseReference.child(convId).child("MsgBox").child(key1).updateChildren(msg2);
     }
 
     public static ReplySource.ReplysListener addReplysListener(String convId, String key,
                                                                final ReplysCallbacks callbacks){
         ReplySource.ReplysListener listener = new ReplySource.ReplysListener(callbacks);
 
-        FIREBASE_REF.child(convId).child("MsgBox").child(key).child("SubReply")
+        sDatabaseReference.child(convId).child("MsgBox").child(key).child("SubReply")
                 .addChildEventListener(listener);
-        FIREBASE_REF.child(convId).child("MsgBox").child(key).child("SubReply")
+        sDatabaseReference.child(convId).child("MsgBox").child(key).child("SubReply")
                 .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
 
-            }
+                    }
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-            }
-        });
+                    }
+                });
         return listener;
     }
 
     public static void stop (ReplySource.ReplysListener listener){
-        FIREBASE_REF.removeEventListener(listener);
+        sDatabaseReference.removeEventListener(listener);
     }
 
     public interface ReplysCallbacks {
@@ -134,7 +133,7 @@ public class ReplySource {
         }
 
         @Override
-        public void onCancelled(FirebaseError firebaseError) {
+        public void onCancelled(DatabaseError databaseError) {
 
         }
     }

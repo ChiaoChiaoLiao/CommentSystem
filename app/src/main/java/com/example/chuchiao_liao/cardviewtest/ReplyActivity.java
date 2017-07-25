@@ -13,18 +13,17 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.firebase.client.Firebase;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import static com.example.chuchiao_liao.cardviewtest.MainActivity.sDatabaseReference;
+
 /**
  * Created by Chuchiao_Liao on 2016/10/27.
  */
 public class ReplyActivity extends AppCompatActivity implements View.OnClickListener, ReplySource.ReplysCallbacks  {
-    private Firebase mMyFirebaseRef;
     public static final String USER_EXTRA = "USER";
     public static final String TAG = "ChatActivity";
     private ArrayList<Message> mReplys;
@@ -38,13 +37,11 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
     private String mKey;
     private int mCount;
     private int mDeleteIndex;
-    private static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Firebase.setAndroidContext(this);
         Bundle bundle = getIntent().getExtras();
         mConvId = bundle.getString(MainActivity.CON);
         mKey = bundle.getString(MainActivity.CHI);
@@ -150,11 +147,11 @@ public class ReplyActivity extends AppCompatActivity implements View.OnClickList
             convertView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    FIREBASE_REF.child(mConvId).child("MsgBox").child(mKey).child("SubReply").child(key).removeValue();
+                    sDatabaseReference.child(mConvId).child("MsgBox").child(mKey).child("SubReply").child(key).removeValue();
                     mCount = mCount - 1;
                     HashMap<String, Object> msg2 = new HashMap<>();
                     msg2.put("ReplyCount", mCount);
-                    FIREBASE_REF.child(mConvId).child("MsgBox").child(mKey).updateChildren(msg2);
+                    sDatabaseReference.child(mConvId).child("MsgBox").child(mKey).updateChildren(msg2);
                     mDeleteIndex = position;
                     return true;
                 }

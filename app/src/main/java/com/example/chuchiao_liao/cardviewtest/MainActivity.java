@@ -2,7 +2,9 @@ package com.example.chuchiao_liao.cardviewtest;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +16,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,9 +32,9 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         /*MessageSource.MessagesCallbacks*/ CombinedSource.CombinedCallbacks {
-    private Firebase mMyFirebaseRef;
     public static final String USER_EXTRA = "USER";
     public static final String TAG = "ChatActivity";
+    public static DatabaseReference sDatabaseReference;
     private ArrayList<Message> mMessages;
     private ArrayList<Reply> mChildMessages;
     private MessagesAdapter mAdapter;
@@ -43,19 +49,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ReplyShortcut.ReplysShortcutListener mChildListener;
     public static int mMsgCount;
     private int mHowMany;
-    private Firebase mFirebaseRef;
     private String mLastId;
     private int mIndex;
     private final int mNumReq = 10;
     private int mDeleteIndex;
     private boolean mIsReq;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Firebase.setAndroidContext(this);
-        mFirebaseRef = new Firebase("https://hostingtest-20944.firebaseio.com/");
 
         mConvId = "CommentSystem";
         mHowMany = mNumReq + 1;
@@ -69,22 +73,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button sendMessage = (Button) findViewById(R.id.messageSend);
         sendMessage.setOnClickListener(this);
 
-        mFirebaseRef.child(mConvId).child("MsgCount")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mMsgCount = Integer.valueOf(dataSnapshot.getValue().toString());
-                mListener = CombinedSource.addCombinedListener(mConvId,
-                        MainActivity.this, mHowMany, null);
-            }
+        mAuth = FirebaseAuth.getInstance();
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
+        sDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+//         Check if user is signed in (non-null) and update UI accordingly.
+        mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    // Sign in success, update UI with the signed-in user's information
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    Log.d(TAG, "signInAnonymously:success " + user);
+                    updateUI();
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "signInAnonymously:failure", task.getException());
+                }
+            }
+        });
+    }
+
+    private void updateUI() {
+        sDatabaseReference.child(mConvId).child("MsgCount")
+                .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                    @Override
+                    public void onDataChange(com.google.firebase.database.DataSnapshot dataSnapshot) {
+                        mMsgCount = Integer.valueOf(dataSnapshot.getValue().toString());
+                        mListener = CombinedSource.addCombinedListener(mConvId,
+                                MainActivity.this, mHowMany, null);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 
     @Override
@@ -106,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         CombinedSource.stop(mListener);
+        FirebaseAuth.getInstance().signOut();
     }
 
     @Override
@@ -238,12 +269,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         convertView.setOnLongClickListener(new View.OnLongClickListener() {
                             @Override
                             public boolean onLongClick(View v) {
-                                mFirebaseRef.child(mConvId).child("MsgBox")
+                                sDatabaseReference.child(mConvId).child("MsgBox")
                                         .child(finalKey).removeValue();
                                 mMsgCount = mMsgCount - 1;
                                 HashMap<String, Object> msg2 = new HashMap<>();
                                 msg2.put("MsgCount", mMsgCount);
-                                mFirebaseRef.child(mConvId).updateChildren(msg2);
+                                sDatabaseReference.child(mConvId).updateChildren(msg2);
                                 mDeleteIndex = position;
                                 return true;
                             }
@@ -291,11 +322,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     convertView.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View v) {
-                            mFirebaseRef.child(mConvId).child("MsgBox").child(finalKey).removeValue();
+                            sDatabaseReference.child(mConvId).child("MsgBox").child(finalKey).removeValue();
                             mMsgCount = mMsgCount - 1;
                             HashMap<String, Object> msg2 = new HashMap<>();
                             msg2.put("MsgCount", mMsgCount);
-                            mFirebaseRef.child(mConvId).updateChildren(msg2);
+                            sDatabaseReference.child(mConvId).updateChildren(msg2);
                             mDeleteIndex = position;
                             return true;
                         }

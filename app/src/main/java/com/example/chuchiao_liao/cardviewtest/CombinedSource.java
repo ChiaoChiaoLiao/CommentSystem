@@ -2,10 +2,9 @@ package com.example.chuchiao_liao.cardviewtest;
 
 import android.util.Log;
 
-import com.firebase.client.ChildEventListener;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,6 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.chuchiao_liao.cardviewtest.MainActivity.sDatabaseReference;
+
 /**
  * Created by Chuchiao_Liao on 2016/11/2.
  */
@@ -32,7 +33,6 @@ public class CombinedSource {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    public static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
     private static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyyMMddhhmmssSSS");
     private static final String TAG = "CombinedDataSource";
     private static final String COLUMN_TEXT = "text";
@@ -69,10 +69,10 @@ public class CombinedSource {
         HashMap<String, String> msg = new HashMap<>();
         msg.put(COLUMN_NAME, message.getName());
         msg.put(COLUMN_TEXT, message.getMessage());
-        FIREBASE_REF.child(convId).child("MsgBox").child(key).setValue(msg);
+        sDatabaseReference.child(convId).child("MsgBox").child(key).setValue(msg);
         HashMap<String, Object> msg2 = new HashMap<>();
         msg2.put("MsgCount", count);
-        FIREBASE_REF.child(convId).updateChildren(msg2);
+        sDatabaseReference.child(convId).updateChildren(msg2);
         mLast = key;
         mRequest = false;
     }
@@ -81,17 +81,17 @@ public class CombinedSource {
         CombinedSource.CombinedListener listener = new CombinedSource.CombinedListener(callbacks);
         if (lastId == null) {
             mRequest = false;
-            FIREBASE_REF.child(convId).child("MsgBox").orderByKey().limitToLast(numReq).addChildEventListener(listener);
+            sDatabaseReference.child(convId).child("MsgBox").orderByKey().limitToLast(numReq).addChildEventListener(listener);
         } else {
             mRequest = true;
-            FIREBASE_REF.child(convId).child("MsgBox").orderByKey().endAt(lastId).limitToLast(numReq).addChildEventListener(listener);
+            sDatabaseReference.child(convId).child("MsgBox").orderByKey().endAt(lastId).limitToLast(numReq).addChildEventListener(listener);
         }
 
         return listener;
     }
 
     public static void stop (CombinedSource.CombinedListener listener){
-        FIREBASE_REF.removeEventListener(listener);
+        sDatabaseReference.removeEventListener(listener);
     }
 
     public interface CombinedCallbacks {
@@ -107,6 +107,27 @@ public class CombinedSource {
         CombinedListener(CombinedSource.CombinedCallbacks callbacks){
             this.callbacks = callbacks;
         }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             if (s == null) s = "";
@@ -199,26 +220,6 @@ public class CombinedSource {
                     mLast = s;
                 }
             }
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(FirebaseError firebaseError) {
-
         }
     }
 }

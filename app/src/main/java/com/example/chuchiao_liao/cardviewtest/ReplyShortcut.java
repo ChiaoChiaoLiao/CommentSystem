@@ -2,13 +2,14 @@ package com.example.chuchiao_liao.cardviewtest;
 
 import android.util.Log;
 
-import com.firebase.client.ChildEventListener;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+
+import static com.example.chuchiao_liao.cardviewtest.MainActivity.sDatabaseReference;
 
 /**
  * Created by Chuchiao_Liao on 2016/10/31.
@@ -21,7 +22,6 @@ public class ReplyShortcut {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    private static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
     private static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyyMMddmmss");
     private static final String TAG = "ReplyShortcutDataSource";
     private static final String COLUMN_TEXT = "text";
@@ -52,13 +52,13 @@ public class ReplyShortcut {
     // ------------------------------------------------------------------------
     public static ReplyShortcut.ReplysShortcutListener addReplysShortcutListener(String convId, String key, final ReplyShortcut.ReplysShortcutCallbacks callbacks){
         ReplyShortcut.ReplysShortcutListener listener = new ReplyShortcut.ReplysShortcutListener(callbacks);
-        FIREBASE_REF.child(convId).child(key).child("SubReply").limitToLast(6).addChildEventListener(listener);
+        sDatabaseReference.child(convId).child(key).child("SubReply").limitToLast(6).addChildEventListener(listener);
 
         return listener;
     }
 
     public static void stop (ReplysShortcutListener listener){
-        FIREBASE_REF.removeEventListener(listener);
+        sDatabaseReference.removeEventListener(listener);
     }
 
     public interface ReplysShortcutCallbacks {
@@ -69,21 +69,6 @@ public class ReplyShortcut {
         private ReplyShortcut.ReplysShortcutCallbacks callbacks;
         ReplysShortcutListener(ReplyShortcut.ReplysShortcutCallbacks callbacks){
             this.callbacks = callbacks;
-        }
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            HashMap<String, String> msg = (HashMap) dataSnapshot.getValue();
-            Reply reply = new Reply();
-            reply.setName(msg.get(COLUMN_NAME));
-            reply.setMessage(msg.get(COLUMN_TEXT));
-            try {
-                reply.setDate(DATA_FORMAT.parse(dataSnapshot.getKey()));
-            } catch (Exception e) {
-                Log.e(TAG, e.toString());
-            }
-            if (callbacks != null) {
-                callbacks.onReplyShortcutAdded(reply);
-            }
         }
 
         @Override
@@ -102,8 +87,24 @@ public class ReplyShortcut {
         }
 
         @Override
-        public void onCancelled(FirebaseError firebaseError) {
+        public void onCancelled(DatabaseError databaseError) {
 
+        }
+
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            HashMap<String, String> msg = (HashMap) dataSnapshot.getValue();
+            Reply reply = new Reply();
+            reply.setName(msg.get(COLUMN_NAME));
+            reply.setMessage(msg.get(COLUMN_TEXT));
+            try {
+                reply.setDate(DATA_FORMAT.parse(dataSnapshot.getKey()));
+            } catch (Exception e) {
+                Log.e(TAG, e.toString());
+            }
+            if (callbacks != null) {
+                callbacks.onReplyShortcutAdded(reply);
+            }
         }
     }
 }

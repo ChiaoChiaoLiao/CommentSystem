@@ -2,15 +2,16 @@ package com.example.chuchiao_liao.cardviewtest;
 
 import android.util.Log;
 
-import com.firebase.client.ChildEventListener;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+
+import static com.example.chuchiao_liao.cardviewtest.MainActivity.sDatabaseReference;
 
 /**
  * Created by Chuchiao_Liao on 2016/10/25.
@@ -23,7 +24,6 @@ public class MessageSource {
     // ------------------------------------------------------------------------
     // STATIC FIELDS
     // ------------------------------------------------------------------------
-    public static final Firebase FIREBASE_REF = new Firebase("https://hostingtest-20944.firebaseio.com/");
     private static SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("yyyyMMddmmss");
     private static final String TAG = "MessageDataSource";
     private static final String COLUMN_TEXT = "text";
@@ -58,19 +58,19 @@ public class MessageSource {
         HashMap<String, String> msg = new HashMap<>();
         msg.put(COLUMN_NAME, message.getName());
         msg.put(COLUMN_TEXT, message.getMessage());
-        FIREBASE_REF.child(convId).child(key).setValue(msg);
+        sDatabaseReference.child(convId).child(key).setValue(msg);
     }
 
     public static Long getChildCount(String convId, String key) {
         final long[] count = new long[1];
-        FIREBASE_REF.child(convId).child(key).child("SubReply").addValueEventListener(new ValueEventListener() {
+        sDatabaseReference.child(convId).child(key).child("SubReply").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 count[0] = dataSnapshot.getChildrenCount();
             }
 
             @Override
-            public void onCancelled(FirebaseError firebaseError) {
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
@@ -80,15 +80,15 @@ public class MessageSource {
     public static MessagesListener addMessagesListener (String convId, final MessagesCallbacks callbacks){
         MessagesListener listener = new MessagesListener(callbacks);
         //sFirebaseRef.child(convId).limitToLast(5).addChildEventListener(listener);
-        FIREBASE_REF.child(convId).addChildEventListener(listener);
-        FIREBASE_REF.child(convId).addValueEventListener(new ValueEventListener() {
+        sDatabaseReference.child(convId).addChildEventListener(listener);
+        sDatabaseReference.child(convId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
             }
 
             @Override
-            public void onCancelled(FirebaseError firebaseError) {
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
@@ -96,14 +96,14 @@ public class MessageSource {
     }
 
     public static void stop (MessagesListener listener){
-        FIREBASE_REF.removeEventListener(listener);
+        sDatabaseReference.removeEventListener(listener);
     }
 
     public interface MessagesCallbacks {
         void onMessageAdded(Message message);
     }
 
-    public static class MessagesListener implements ChildEventListener{
+    public static class MessagesListener implements ChildEventListener {
         private MessagesCallbacks callbacks;
         MessagesListener(MessagesCallbacks callbacks){
             this.callbacks = callbacks;
@@ -156,7 +156,7 @@ public class MessageSource {
         }
 
         @Override
-        public void onCancelled(FirebaseError firebaseError) {
+        public void onCancelled(DatabaseError databaseError) {
 
         }
     }
